@@ -14,10 +14,12 @@ import { DetailCategoryController } from './controllers/category/ListCategoryCon
 import { CreateProductController } from './controllers/product/CreateProductController.js';
 import {
   createProductSchema,
+  listProductsByCategorySchema,
   listProductSchema,
 } from './schemas/productSchema.js';
 import { ListProductController } from './controllers/product/ListProductController.js';
 import { DeleteProductController } from './controllers/product/DeleteProductController.js';
+import { ListProductByCategoryController } from './controllers/product/ListProductByCategoryController.js';
 const router = Router();
 const upload = multer(uploadConfig);
 // user routes
@@ -67,5 +69,11 @@ router.delete(
   isAuthenticated,
   isAdmin,
   new DeleteProductController().handle,
+);
+router.get(
+  '/category/:category_id/products',
+  isAuthenticated,
+  validateSchema(listProductsByCategorySchema),
+  new ListProductByCategoryController().handle,
 );
 export { router };
