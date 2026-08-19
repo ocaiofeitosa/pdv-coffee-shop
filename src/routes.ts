@@ -12,7 +12,11 @@ import { createCategorySchema } from './schemas/categorySchema.js';
 import { isAdmin } from './middlewares/isAdmin.js';
 import { DetailCategoryController } from './controllers/category/ListCategoryController.js';
 import { CreateProductController } from './controllers/product/CreateProductController.js';
-import { createProductSchema } from './schemas/productSchema.js';
+import {
+  createProductSchema,
+  listProductSchema,
+} from './schemas/productSchema.js';
+import { ListProductController } from './controllers/product/ListProductController.js';
 const router = Router();
 const upload = multer(uploadConfig);
 // user routes
@@ -50,5 +54,11 @@ router.post(
   upload.single('file'),
   validateSchema(createProductSchema),
   new CreateProductController().handle,
+);
+router.get(
+  '/products',
+  isAuthenticated,
+  validateSchema(listProductSchema),
+  new ListProductController().handle,
 );
 export { router };
