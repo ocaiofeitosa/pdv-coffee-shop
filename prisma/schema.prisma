@@ -46,10 +46,11 @@ model Product {
   banner String
   disabled Boolean @default(false)
   category_id String
-  category Category @relation(fields: [category_id], references: [id], onDelete: Cascade)
-  item Item[]
+  category Category @relation(fields: [category_id], references: [id])
+  items Item[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  @@index([category_id])
   @@map("products")
 }
 
@@ -68,11 +69,14 @@ model Order {
 model Item{
   id String @id @default(uuid())
   amount Int
+  price Int
   order_id String
   order Order @relation(fields: [order_id], references: [id], onDelete: Cascade)
   product_id String
   product Product @relation(fields: [product_id], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  @@index([order_id])
+  @@index([product_id])
   @@map("items")
 }
