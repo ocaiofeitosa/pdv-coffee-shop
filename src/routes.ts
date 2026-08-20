@@ -20,6 +20,9 @@ import {
 import { ListProductController } from './controllers/product/ListProductController.js';
 import { DeleteProductController } from './controllers/product/DeleteProductController.js';
 import { ListProductByCategoryController } from './controllers/product/ListProductByCategoryController.js';
+import { CreateOrderController } from './controllers/order/CreateOrderController.js';
+import { createOrderSchema } from './schemas/orderSchema.js';
+import { ListOrdersController } from './controllers/order/ListOrdersController.js';
 const router = Router();
 const upload = multer(uploadConfig);
 // user routes
@@ -76,4 +79,14 @@ router.get(
   validateSchema(listProductsByCategorySchema),
   new ListProductByCategoryController().handle,
 );
+
+// order routes
+router.post(
+  '/order',
+  isAuthenticated,
+  isAdmin,
+  validateSchema(createOrderSchema),
+  new CreateOrderController().handle,
+);
+router.get('/orders', isAuthenticated, new ListOrdersController().handle);
 export { router };
