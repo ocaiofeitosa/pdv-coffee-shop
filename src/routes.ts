@@ -21,8 +21,12 @@ import { ListProductController } from './controllers/product/ListProductControll
 import { DeleteProductController } from './controllers/product/DeleteProductController.js';
 import { ListProductByCategoryController } from './controllers/product/ListProductByCategoryController.js';
 import { CreateOrderController } from './controllers/order/CreateOrderController.js';
-import { createOrderSchema } from './schemas/orderSchema.js';
+import {
+  addItemToOrderSchema,
+  createOrderSchema,
+} from './schemas/orderSchema.js';
 import { ListOrdersController } from './controllers/order/ListOrdersController.js';
+import { AddItemToOrderController } from './controllers/order/AddItemToOrderController.js';
 const router = Router();
 const upload = multer(uploadConfig);
 // user routes
@@ -89,4 +93,14 @@ router.post(
   new CreateOrderController().handle,
 );
 router.get('/orders', isAuthenticated, new ListOrdersController().handle);
+
+// addtem routes
+router.post(
+  '/order/add',
+  isAuthenticated,
+  isAdmin,
+  validateSchema(addItemToOrderSchema),
+  new AddItemToOrderController().handle,
+);
+
 export { router };
