@@ -1,11 +1,12 @@
 import z from 'zod';
 
 export const createOrderSchema = z.object({
-  body: {
+  body: z.object({
     table: z.coerce
       .number()
       .min(1, { message: 'O número da mesa é obrigatório!' }),
-  },
+    name: z.string().min(1, { message: 'O nome é obrigatório!' }),
+  }),
 });
 
 export const addItemToOrderSchema = z.object({

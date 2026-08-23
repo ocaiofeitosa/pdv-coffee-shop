@@ -27,6 +27,8 @@ import {
 } from './schemas/orderSchema.js';
 import { ListOrdersController } from './controllers/order/ListOrdersController.js';
 import { AddItemToOrderController } from './controllers/order/AddItemToOrderController.js';
+import { DeleteItemFromOrderController } from './controllers/order/DeleteItemFromOrderController.js';
+import { ListAndOrderController } from './controllers/order/ListAnOrderController.js';
 const router = Router();
 const upload = multer(uploadConfig);
 // user routes
@@ -93,8 +95,7 @@ router.post(
   new CreateOrderController().handle,
 );
 router.get('/orders', isAuthenticated, new ListOrdersController().handle);
-
-// addtem routes
+// add item to an Order
 router.post(
   '/order/add',
   isAuthenticated,
@@ -102,5 +103,11 @@ router.post(
   validateSchema(addItemToOrderSchema),
   new AddItemToOrderController().handle,
 );
-
+router.delete(
+  '/order/remove',
+  isAuthenticated,
+  isAdmin,
+  new DeleteItemFromOrderController().handle,
+);
+router.get('/order/id', isAuthenticated, new ListAndOrderController().handle);
 export { router };
