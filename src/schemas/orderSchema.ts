@@ -16,3 +16,21 @@ export const addItemToOrderSchema = z.object({
     product_id: z.string({ message: 'O número do produto é obrigatório!' }),
   }),
 });
+
+export const sendOrderToProductionSchema = z.object({
+  params: z.object({
+    order_id: z.string({ message: 'O número do pedido é obrigatório!' }).min(1),
+  }),
+});
+
+export const finishOrderSchema = z.object({
+  params: z.object({
+    order_id: z.string({ message: 'O número do pedido é obrigatório' }).min(1),
+  }),
+});
+
+export const deleteOrderSchema = z.object({
+  params: z.object({
+    order_id: z.string({ message: 'O número do pedido é obrigatório' }).min(1),
+  }),
+});

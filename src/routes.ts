@@ -24,11 +24,17 @@ import { CreateOrderController } from './controllers/order/CreateOrderController
 import {
   addItemToOrderSchema,
   createOrderSchema,
+  deleteOrderSchema,
+  finishOrderSchema,
+  sendOrderToProductionSchema,
 } from './schemas/orderSchema.js';
 import { ListOrdersController } from './controllers/order/ListOrdersController.js';
 import { AddItemToOrderController } from './controllers/order/AddItemToOrderController.js';
 import { DeleteItemFromOrderController } from './controllers/order/DeleteItemFromOrderController.js';
 import { ListAndOrderController } from './controllers/order/ListAnOrderController.js';
+import { SendOrderToProductionController } from './controllers/order/SendOrderToProductionController.js';
+import { FinishOrderController } from './controllers/order/FinishOrderController.js';
+import { DeleteOrderController } from './controllers/order/DeleteOrderController.js';
 const router = Router();
 const upload = multer(uploadConfig);
 // user routes
@@ -95,7 +101,6 @@ router.post(
   new CreateOrderController().handle,
 );
 router.get('/orders', isAuthenticated, new ListOrdersController().handle);
-// add item to an Order
 router.post(
   '/order/add',
   isAuthenticated,
@@ -109,5 +114,27 @@ router.delete(
   isAdmin,
   new DeleteItemFromOrderController().handle,
 );
-router.get('/order/id', isAuthenticated, new ListAndOrderController().handle);
+router.get(
+  '/order/detail',
+  isAuthenticated,
+  new ListAndOrderController().handle,
+);
+router.put(
+  '/order/send/:order_id',
+  isAuthenticated,
+  validateSchema(sendOrderToProductionSchema),
+  new SendOrderToProductionController().handle,
+);
+router.put(
+  '/order/finish/:order_id',
+  isAuthenticated,
+  validateSchema(finishOrderSchema),
+  new FinishOrderController().handle,
+);
+router.delete(
+  '/order/delete/:order_id',
+  isAuthenticated,
+  validateSchema(deleteOrderSchema),
+  new DeleteOrderController().handle,
+);
 export { router };
