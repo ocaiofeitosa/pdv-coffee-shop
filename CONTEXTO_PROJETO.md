@@ -1,10 +1,10 @@
 # Contexto do Projeto PDV
 
-Este documento descreve a implementação atual do backend do sistema de ponto de venda (PDV). Ele deve ser atualizado quando houver alteração de arquitetura, contrato de API, dependências, banco de dados ou regras de negócio.
+Este documento descreve o estado atual do backend do sistema de ponto de venda (PDV). Deve ser atualizado quando houver alteração de arquitetura, contrato de API, dependências, banco de dados ou regras de negócio.
 
 ## Visão geral
 
-O projeto é uma API HTTP para gerenciamento de usuários, autenticação, categorias e produtos. O backend usa Node.js com TypeScript, Express e Prisma para comunicação com um banco PostgreSQL. Imagens de produtos são recebidas via upload multipart e armazenadas no Cloudinary.
+O projeto é uma API HTTP para gerenciamento de usuários, autenticação, categorias, produtos e pedidos. O backend usa Node.js com TypeScript, Express 5 e Prisma 7 para comunicação com um banco PostgreSQL. Imagens de produtos são recebidas via upload multipart e armazenadas no Cloudinary. O frontend está em `frontend/` e usa Next.js.
 
 ## Arquitetura
 
@@ -38,7 +38,7 @@ PostgreSQL > Prisma Client > Service > Controller > resposta HTTP
 
 ## Stack e versões
 
-As versões abaixo são as declaradas em `backend/package.json` por meio de ranges `^`:
+As versões são as declaradas em `backend/package.json` por ranges `^`:
 
 ### Dependências de execução
 
@@ -88,13 +88,14 @@ backend/
 │   └── migrations/               # Histórico de migrations
 ├── src/
 │   ├── server.ts                 # Inicialização do Express
-│   ├── routes.ts                 # Registro das rotas
+│   ├── routes.ts                 # Registro das 17 rotas
 │   ├── @types/express/           # Extensão dos tipos de Request
 │   ├── config/                   # Configurações do Multer e Cloudinary
 │   ├── controllers/
 │   │   ├── user/                 # Controllers de usuário e sessão
 │   │   ├── category/             # Controllers de categoria
-│   │   └── product/              # Controllers de produto
+│   │   ├── product/              # Controllers de produto
+│   │   └── order/                # Controllers de pedidos
 │   ├── generated/prisma/         # Código gerado pelo Prisma
 │   ├── middlewares/              # Validação, autenticação e autorização
 │   ├── prisma/index.ts           # Instância compartilhada do Prisma Client
@@ -102,13 +103,14 @@ backend/
 │   └── services/
 │       ├── user/                 # Regras de usuário e autenticação
 │       ├── category/             # Regras de categoria
-│       └── product/              # Regras de produto
+│       ├── product/              # Regras de produto
+│       └── order/                # Regras de pedidos
 └── package.json                  # Dependências e scripts
 ```
 
 ## Endpoints atuais
 
-As rotas são registradas sem prefixo global em `src/routes.ts`.
+Não existe prefixo global: as rotas são registradas diretamente em `src/routes.ts`. O catálogo completo, com exemplos de requests e responses, está em [endpoints.md](endpoints.md). Atualmente existem 17 endpoints: 3 de usuários/sessão, 2 de categorias, 4 de produtos e 8 de pedidos.
 
 ### Usuários e sessão
 
@@ -205,6 +207,12 @@ Middlewares, na ordem: `isAuthenticated`, `isAdmin`, `upload.single('file')` e `
 
 Retorna os campos `id`, `name`, `price`, `description`, `category_id`, `banner` e `createdAt`.
 
+### Pedidos
+
+O backend também implementa criação e listagem de pedidos, inclusão e remoção de itens, consulta de detalhes, envio para produção, finalização e exclusão. Os pedidos começam com `draft: true` e `status: false`; enviar para produção muda `draft` para `false`, e finalizar muda `status` para `true`. A descrição de cada rota, campos, respostas e exemplos está em [endpoints.md](endpoints.md).
+
+Rotas administrativas: `POST /order`, `POST /order/add/:order_id/:product_id` e `DELETE /order/remove/:item_id`. As demais rotas de pedidos exigem autenticação, mas não exigem perfil `ADMIN`.
+
 ## Middlewares
 
 ### `validateSchema`
@@ -229,16 +237,9 @@ Erros inesperados dentro da validação retornam `500`.
 
 Lê `Authorization`, separa o token pelo espaço e valida o JWT com `JWT_SECRET`. O `subject` (`sub`) do token é armazenado em `req.user_id` para uso posterior.
 
-- Sem header de autorização: `401` com `Token não fornecido`.
-- Token inválido ou expirado: `401` com `Token inválido!`.
-
 ### `isAdmin`
 
 Busca no banco o perfil do usuário identificado por `req.user_id` e permite a continuação somente quando `role === 'ADMIN'`.
-
-- Sem usuário identificado: `401`.
-- Perfil diferente de `ADMIN`: `400` com mensagem de acesso negado.
-- Falha ao consultar permissões: `500`.
 
 ### Multer (`uploadConfig`)
 
@@ -250,7 +251,7 @@ O datasource é PostgreSQL. IDs são strings geradas por UUID. Os campos `create
 
 ### Enum `Role`
 
-- `STAFF`: perfil padrão de usuário.
+- `STAFF`: perfil padrão.
 - `ADMIN`: perfil com autorização administrativa.
 
 ### `User` (`users`)
@@ -290,13 +291,13 @@ Order    1 ---- N Item N ---- 1 Product
 
 ## Fluxos de negócio implementados
 
-- **Cadastro:** verifica e-mail existente, gera hash bcrypt com custo 8, cria usuário com papel padrão `STAFF` e seleciona somente campos públicos.
-- **Login:** busca por e-mail, compara a senha com bcrypt e gera JWT com `sub` igual ao ID do usuário e validade de 30 dias.
-- **Consulta do usuário atual:** usa o ID extraído do JWT e não retorna a senha.
-- **Cadastro de categoria:** verifica nome duplicado, cria a categoria e retorna os campos públicos.
-- **Listagem de categorias:** consulta todas as categorias e ordena por `createdAt` decrescente; está disponível para qualquer usuário autenticado.
-- **Cadastro de produto:** recebe dados e imagem, valida a categoria, evita nome duplicado, faz upload no Cloudinary e persiste a URL retornada junto dos dados do produto.
-- **Autorização administrativa:** consulta o papel diretamente no banco a cada requisição protegida por `isAdmin`.
+- Cadastro verifica e-mail existente, gera hash bcrypt com custo 8 e retorna somente campos públicos.
+- Login compara a senha e gera JWT com `sub` igual ao ID do usuário e validade de 30 dias.
+- Categorias são listadas por `createdAt` decrescente; produtos por `createdAt` decrescente.
+- Produtos arquivados usam `disabled = true`; a exclusão de produto é lógica, não física.
+- A listagem por categoria retorna somente produtos ativos e ordena por `createdAt` crescente.
+- Ao adicionar item, o preço atual do produto é copiado para `Item.price`.
+- A autorização administrativa consulta o papel diretamente no banco a cada requisição protegida por `isAdmin`.
 
 ## Tratamento de erros
 
@@ -313,6 +314,9 @@ Estes pontos refletem o código existente e devem ser tratados antes de consider
 3. A migration cria a foreign key de `products.category_id` com `ON DELETE CASCADE`, enquanto o schema Prisma atual não declara explicitamente `onDelete`. O schema e o histórico do banco devem ser alinhados conforme a regra desejada.
 4. O arquivo de tipos do Express declara `user_id` e `category_id` como obrigatórios, embora `isAuthenticated` possa deixar `user_id` ausente até a validação e `category_id` não seja preenchido atualmente.
 5. A variável de porta está sendo lida como `process.env.port`; por convenção, normalmente seria `PORT`. Qualquer mudança deve ser refletida no ambiente de execução e na documentação.
+6. `GET /orders` lê `draft` de `req.body`, embora seja uma requisição GET. Sem `draft: "true"`, o service lista pedidos que não são rascunho.
+7. As schemas de adicionar item, remover item e detalhar pedido validam parâmetros de rota, mas os controllers leem os IDs de `req.body`.
+8. A schema de listagem por categoria valida `category_id` em `query`, mas a rota e o controller usam `params`.
 
 ## Comandos principais
 

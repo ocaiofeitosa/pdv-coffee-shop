@@ -102,20 +102,20 @@ router.post(
 );
 router.get('/orders', isAuthenticated, new ListOrdersController().handle);
 router.post(
-  '/order/add',
+  '/order/add/:order_id/:product_id',
   isAuthenticated,
   isAdmin,
   validateSchema(addItemToOrderSchema),
   new AddItemToOrderController().handle,
 );
 router.delete(
-  '/order/remove',
+  '/order/remove/:item_id',
   isAuthenticated,
   isAdmin,
   new DeleteItemFromOrderController().handle,
 );
 router.get(
-  '/order/detail',
+  '/order/detail/:order_id',
   isAuthenticated,
   new ListAndOrderController().handle,
 );
