@@ -1,7 +1,8 @@
 
 node_modules/
 /generated/prisma/
-
+dist
+/dist
 .env
 
 
