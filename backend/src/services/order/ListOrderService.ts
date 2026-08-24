@@ -6,9 +6,11 @@ interface ListOrdersServiceProps {
 
 class ListOrderService {
   async execute({ draft }: ListOrdersServiceProps) {
+    const isDraft = draft !== undefined ? draft === 'true' : false;
     const listOrders = await prismaClient.order.findMany({
       where: {
-        draft: draft === 'true' ? true : false,
+        draft: isDraft,
+        status: false,
       },
       select: {
         id: true,
