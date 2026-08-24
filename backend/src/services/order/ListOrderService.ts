@@ -23,6 +23,7 @@ class ListOrderService {
           select: {
             id: true,
             amount: true,
+            price: true,
             product: {
               select: {
                 id: true,
