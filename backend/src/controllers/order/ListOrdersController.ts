@@ -4,7 +4,7 @@ import { ListOrderService } from '../../services/order/ListOrderService.js';
 class ListOrdersController {
   async handle(req: Request, res: Response, next: NextFunction) {
     try {
-      const { draft } = req.body;
+      const { draft } = req.query as { draft: string };
 
       const order = new ListOrderService();
       const listOrder = await order.execute({ draft });
