@@ -1,1 +1,54 @@
+name: Deploy Backend to Napoleon Host
 
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'backend/**'
+      - '.github/workflows/**'
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install Dependencies & Build
+        working-directory: ./backend
+        run: |
+          npm ci
+          npm run build
+
+      - name: Copy Files via SCP
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT }}
+          source: "backend/"
+          target: "/home/devcaioe/api.devcaioeduardo.com.br"
+          strip_components: 1
+
+      - name: Restart Node.js Application & Migrate
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT }}
+          script: |
+            cd /home/devcaioe/api.devcaioeduardo.com.br
+            /home/devcaioe/nodevenv/api.devcaioeduardo.com.br/20/bin/npm install --production
+            /home/devcaioe/nodevenv/api.devcaioeduardo.com.br/20/bin/npx prisma migrate deploy
+            mkdir -p tmp
+            touch tmp/restart.txt
