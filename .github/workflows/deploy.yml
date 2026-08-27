@@ -28,7 +28,7 @@ jobs:
           npm run build
 
       - name: Deploy to Server via SFTP/SSH
-        uses: easingthemes/ssh-deploy@v5
+        uses: easingthemes/ssh-deploy@v3
         env:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
           ARGS: "-rltgoDzvO --delete --exclude='.git*' --exclude='node_modules' --exclude='.env' --exclude='prisma/dev.db'"
