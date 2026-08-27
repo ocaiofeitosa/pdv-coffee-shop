@@ -27,26 +27,16 @@ jobs:
           npm ci
           npm run build
 
-      - name: Deploy to Server via SFTP/SSH
-        uses: easingthemes/ssh-deploy@v3
-        env:
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-          # Alteramos os ARGS para desativar verificações extras de git e limpar arquivos órfãos
-          ARGS: "-rltgoDzvO --delete --exclude='.git*' --exclude='node_modules' --exclude='.env' --exclude='prisma/dev.db'"
-          SOURCE: 'backend/'
-          REMOTE_HOST: ${{ secrets.SSH_HOST }}
-          REMOTE_USER: ${{ secrets.SSH_USERNAME }}
-          TARGET: '/home/devcaioe/api.devcaioeduardo.com.br/'
-          # Força o plugin a ignorar checagens de repositório git remoto na máquina de destino
-          SCRIPT_AFTER: ''
-
-      - name: Restart Node.js Application & Migrate
+      - name: Deploy to Server via Rsync/SSH
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.SSH_PORT }}
+          source: 'backend/'
+          target: '/home/devcaioe/api.devcaioeduardo.com.br'
+          strip_components: 1
           script: |
             cd /home/devcaioe/api.devcaioeduardo.com.br
             /home/devcaioe/nodevenv/api.devcaioeduardo.com.br/20/bin/npm install --production
