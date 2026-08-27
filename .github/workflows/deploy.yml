@@ -27,8 +27,8 @@ jobs:
           npm ci
           npm run build
 
-      - name: Deploy to Server via Rsync/SSH
-        uses: appleboy/ssh-action@v1.0.3
+      - name: Copy Files via SCP (Secure Copy)
+        uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USERNAME }}
@@ -37,6 +37,14 @@ jobs:
           source: 'backend/'
           target: '/home/devcaioe/api.devcaioeduardo.com.br'
           strip_components: 1
+
+      - name: Restart Node.js Application & Migrate
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT }}
           script: |
             cd /home/devcaioe/api.devcaioeduardo.com.br
             /home/devcaioe/nodevenv/api.devcaioeduardo.com.br/20/bin/npm install --production
