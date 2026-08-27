@@ -50,3 +50,5 @@ jobs:
             /home/devcaioe/nodevenv/api.devcaioeduardo.com.br/20/bin/npx prisma migrate deploy
             mkdir -p tmp
             touch tmp/restart.txt
+
+# Atualizando a action para v3
