@@ -4,7 +4,8 @@ import { AddItemToOrderService } from '../../services/order/AddItemToOrderServic
 class AddItemToOrderController {
   async handle(req: Request, res: Response, next: NextFunction) {
     try {
-      const { amount, order_id, product_id } = req.body;
+      const { amount } = req.body;
+      const { order_id, product_id } = req.params;
       const item = new AddItemToOrderService();
       const newItem = await item.execute({
         amount,
