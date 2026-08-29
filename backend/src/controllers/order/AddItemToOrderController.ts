@@ -5,7 +5,10 @@ class AddItemToOrderController {
   async handle(req: Request, res: Response, next: NextFunction) {
     try {
       const { amount } = req.body;
-      const { order_id, product_id } = req.params;
+      const { order_id, product_id } = req.params as {
+        order_id: string;
+        product_id: string;
+      };
       const item = new AddItemToOrderService();
       const newItem = await item.execute({
         amount,
