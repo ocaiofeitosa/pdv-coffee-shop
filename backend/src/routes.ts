@@ -69,7 +69,7 @@ router.post(
   '/product',
   isAuthenticated,
   isAdmin,
-  upload.single('file'),
+  upload.single('banner'),
   validateSchema(createProductSchema),
   new CreateProductController().handle,
 );
