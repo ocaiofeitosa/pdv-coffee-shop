@@ -4,7 +4,9 @@ import { DeleteItemFromOrderService } from '../../services/order/DeleteItemFromO
 class DeleteItemFromOrderController {
   async handle(req: Request, res: Response, next: NextFunction) {
     try {
-      const { item_id } = req.body;
+      const { item_id } = req.params as {
+        item_id: string;
+      };
       if (!item_id) {
         throw new Error('ID do item é obrigatório!');
       }
