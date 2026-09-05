@@ -20,7 +20,7 @@ export const listProductSchema = z.object({
   }),
 });
 export const listProductsByCategorySchema = z.object({
-  query: z.object({
+  params: z.object({
     category_id: z.string({ message: 'o ID da categoria é obrigatório!' }),
   }),
 });
